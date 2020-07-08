@@ -1,3 +1,5 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/siodb/siodb-go-driver)](https://goreportcard.com/report/github.com/siodb/siodb-go-driver)
+
 # Go driver for Siodb
 
 A simple driver for Siodb written in pure Go.
