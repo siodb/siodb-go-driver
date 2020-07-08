@@ -83,7 +83,7 @@ func (sc *siodbConn) ExecContext(ctx context.Context, query string, args []drive
 		return nil, err
 	}
 
-	var AffectedRowCount int64 = 0
+	var AffectedRowCount int64
 	if sr.HasAffectedRowCount {
 		AffectedRowCount = int64(sr.AffectedRowCount)
 	}
