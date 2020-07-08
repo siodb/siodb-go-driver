@@ -16,6 +16,7 @@ import (
 	"strconv"
 )
 
+// Config holds the connection Configuration
 type Config struct {
 	protocol       string // https://golang.org/pkg/net/#Dial
 	host           string // Network address
@@ -27,13 +28,13 @@ type Config struct {
 	trace          bool   // Trace Siodb protol?
 }
 
-type SiodbDriver struct{}
+type siodbDriver struct{}
 
 func init() {
-	sql.Register("siodb", &SiodbDriver{})
+	sql.Register("siodb", &siodbDriver{})
 }
 
-func ParseURI(URI string) (cfg Config, err error) {
+func parseURI(URI string) (cfg Config, err error) {
 
 	// Set default
 	cfg.protocol = "siodbs"
@@ -49,7 +50,7 @@ func ParseURI(URI string) (cfg Config, err error) {
 	// Overwrite default with provided URI
 	uri, err := url.Parse(URI)
 	if uri.Scheme != "siodbs" && uri.Scheme != "siodb" && uri.Scheme != "siodbu" {
-		return cfg, &SiodbDriverError{"Paring URI: unknown scheme '" + uri.Scheme + "'"}
+		return cfg, &siodbDriverError{"Paring URI: unknown scheme '" + uri.Scheme + "'"}
 	}
 	cfg.protocol = uri.Scheme
 
@@ -69,7 +70,7 @@ func ParseURI(URI string) (cfg Config, err error) {
 	// Parse Options
 	var options url.Values
 	if options, err = url.ParseQuery(uri.RawQuery); err != nil {
-		return cfg, &SiodbDriverError{"Error while paring options from URI: '" + err.Error() + "'."}
+		return cfg, &siodbDriverError{"Error while paring options from URI: '" + err.Error() + "'."}
 	}
 
 	if len(options.Get("identity_file")) > 0 {
@@ -82,23 +83,23 @@ func ParseURI(URI string) (cfg Config, err error) {
 		if trc, err := strconv.ParseBool(options.Get("trace")); err == nil {
 			cfg.trace = trc
 		} else {
-			return cfg, &SiodbDriverError{"Paring URI: option 'trace' can be 'true' or 'false'."}
+			return cfg, &siodbDriverError{"Paring URI: option 'trace' can be 'true' or 'false'."}
 		}
 	}
 
 	if cfg.trace {
-		fmt.Printf("## SIODB DRIVER | config used: %v.\n", cfg)
+		fmt.Printf("## SIODB DRIVER | Config used: %v.\n", cfg)
 	}
 
 	return cfg, err
 }
 
-func (d SiodbDriver) Open(dsn string) (driver.Conn, error) {
+func (d siodbDriver) Open(dsn string) (driver.Conn, error) {
 
 	var cfg Config
 	var err error
 
-	if cfg, err = ParseURI(dsn); err != nil {
+	if cfg, err = parseURI(dsn); err != nil {
 		return nil, err
 	}
 	c := &connector{
@@ -113,23 +114,23 @@ func (d SiodbDriver) Open(dsn string) (driver.Conn, error) {
 	// Plain connection
 	if sc.cfg.protocol == "siodbu" {
 		if sc.netConn, err = net.Dial("unix", sc.cfg.unixSocketPath); err != nil {
-			return nil, &SiodbDriverError{"Unable to connect to " + sc.cfg.unixSocketPath + "."}
+			return nil, &siodbDriverError{"Unable to connect to " + sc.cfg.unixSocketPath + "."}
 		}
 	}
 
 	// Plain connection
 	if sc.cfg.protocol == "siodb" {
 		if sc.netConn, err = net.Dial("tcp", sc.cfg.host+":"+sc.cfg.port); err != nil {
-			return nil, &SiodbDriverError{"Unable to connect to " + sc.cfg.host + "."}
+			return nil, &siodbDriverError{"Unable to connect to " + sc.cfg.host + "."}
 		}
 	}
 
 	// TLS connection
 	if sc.cfg.protocol == "siodbs" {
-		config := &tls.Config{InsecureSkipVerify: true}
+		Config := &tls.Config{InsecureSkipVerify: true}
 
-		if sc.netConn, err = tls.Dial("tcp", sc.cfg.host+":"+sc.cfg.port, config); err != nil {
-			return nil, &SiodbDriverError{"Unable to connect to " + sc.cfg.host + "."}
+		if sc.netConn, err = tls.Dial("tcp", sc.cfg.host+":"+sc.cfg.port, Config); err != nil {
+			return nil, &siodbDriverError{"Unable to connect to " + sc.cfg.host + "."}
 		}
 	}
 

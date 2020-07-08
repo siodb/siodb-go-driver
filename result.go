@@ -6,11 +6,11 @@ package siodb
 
 type siodbResult struct {
 	AffectedRowCount int64
-	insertId         int64
+	insertID         int64
 }
 
 func (res *siodbResult) LastInsertId() (int64, error) {
-	return res.insertId, nil
+	return res.insertID, nil
 }
 
 func (res *siodbResult) RowsAffected() (int64, error) {

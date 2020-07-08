@@ -36,14 +36,14 @@ func (sc *siodbConn) authenticate() (err error) {
 
 	// Check if Siodb has started the session
 	if !beginSessionResponse.GetSessionStarted() {
-		return &SiodbDriverError{"Starting session failed: " + beginSessionResponse.GetMessage().GetText()}
+		return &siodbDriverError{"Starting session failed: " + beginSessionResponse.GetMessage().GetText()}
 	}
 	sc.debug("authenticate | beginSessionResponse | %v", sc.cfg.privateKey)
 
 	// Sign challenge sha512 digest
-	sha_512 := sha512.New()
-	sha_512.Write(beginSessionResponse.GetChallenge())
-	signature, err := rsa.SignPKCS1v15(nil, sc.cfg.privateKey, crypto.SHA512, sha_512.Sum(nil))
+	sha512 := sha512.New()
+	sha512.Write(beginSessionResponse.GetChallenge())
+	signature, err := rsa.SignPKCS1v15(nil, sc.cfg.privateKey, crypto.SHA512, sha512.Sum(nil))
 	sc.debug("authenticate | signature | %v", err)
 
 	// Begin Session Request
@@ -64,12 +64,12 @@ func (sc *siodbConn) authenticate() (err error) {
 
 	// Check if Siodb has authenticated the session
 	if !clientAuthenticationResponse.GetAuthenticated() {
-		return &SiodbDriverError{"Authentication failed: " + clientAuthenticationResponse.GetMessage().GetText()}
+		return &siodbDriverError{"Authentication failed: " + clientAuthenticationResponse.GetMessage().GetText()}
 	}
 	sc.debug("authenticate | %v", clientAuthenticationResponse)
 
 	// Setup session Id
-	sc.sessionId = clientAuthenticationResponse.GetSessionId()
+	sc.sessionID = clientAuthenticationResponse.GetSessionId()
 
 	return nil
 }
@@ -78,13 +78,13 @@ func loadPrivateKey(rsaPKeyPath string, rsaPKeyPwd string) (pk *rsa.PrivateKey, 
 
 	priv, err := ioutil.ReadFile(rsaPKeyPath)
 	if err != nil {
-		return pk, &SiodbDriverError{"Paring URI: Indentity file '" + rsaPKeyPath + "' not found."}
+		return pk, &siodbDriverError{"Paring URI: Indentity file '" + rsaPKeyPath + "' not found."}
 	}
 
 	privatePem, _ := pem.Decode(priv)
 	var privatePemBytes []byte
 	if privatePem.Type != "RSA PRIVATE KEY" {
-		return pk, &SiodbDriverError{"RSA private key is of the wrong type."}
+		return pk, &siodbDriverError{"RSA private key is of the wrong type."}
 	}
 
 	if rsaPKeyPwd != "" {
@@ -96,14 +96,14 @@ func loadPrivateKey(rsaPKeyPath string, rsaPKeyPwd string) (pk *rsa.PrivateKey, 
 	var parsedPrivateKey interface{}
 	if parsedPrivateKey, err = x509.ParsePKCS1PrivateKey(privatePemBytes); err != nil {
 		if parsedPrivateKey, err = x509.ParsePKCS8PrivateKey(privatePemBytes); err != nil {
-			return pk, &SiodbDriverError{"Unable to parse RSA private key."}
+			return pk, &siodbDriverError{"Unable to parse RSA private key."}
 		}
 	}
 
 	var ok bool
 	pk, ok = parsedPrivateKey.(*rsa.PrivateKey)
 	if !ok {
-		return pk, &SiodbDriverError{"Unable to parse RSA private key"}
+		return pk, &siodbDriverError{"Unable to parse RSA private key"}
 	}
 
 	return pk, nil

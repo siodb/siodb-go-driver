@@ -45,121 +45,121 @@ You're ready to Go!
 package main
 
 import (
-	"context"
-	"database/sql"
-	_ "bitbucket.org/siodb-squad/siodb-go-driver"
+    "context"
+    "database/sql"
+    _ "bitbucket.org/siodb-squad/siodb-go-driver"
 )
 ```
 
 ### Siodb Connection
 
 ```go
-	db, err := sql.Open("siodb", "siodbs://root@localhost:50000?identity_file=/home/nico/root_id_rsa")
-	if err != nil {
-		t.Fatalf("Error occured %s", err.Error())
-	}
-	defer db.Close()
+    db, err := sql.Open("siodb", "siodbs://root@localhost:50000?identity_file=/home/nico/root_id_rsa")
+    if err != nil {
+        t.Fatalf("Error occurred %s", err.Error())
+    }
+    defer db.Close()
 
-	ctx, stop := context.WithCancel(context.Background())
-	defer stop()
+    ctx, stop := context.WithCancel(context.Background())
+    defer stop()
 
-	if err := db.PingContext(ctx); err != nil {
-		t.Fatalf("Error occured %s", err.Error())
-	}
+    if err := db.PingContext(ctx); err != nil {
+        t.Fatalf("Error occurred %s", err.Error())
+    }
 ```
 
 ### DDL
 
 ```go
-	var name string
-	err = db.QueryRowContext(ctx, "select name from test.sys_tables where name = 'TABLEALLDATATYPES'").Scan(&name)
-	switch {
-	case err == sql.ErrNoRows:
-		if _, err := db.ExecContext(ctx,
-			`CREATE TABLE test.tablealldatatypes
-						            (
-						            	ctinyintmin  TINYINT,
-						            	ctinyintmax  TINYINT,
-			    		            	ctinyuint    TINYUINT,
-						            	csmallintmin SMALLINT,
-						            	csmallintmax SMALLINT,
-						            	csmalluint   SMALLUINT,
-						            	cintmin      INT,
-						            	cintmax      INT,
-						            	cuint        UINT,
-						            	cbigintmin   BIGINT,
-						            	cbigintmax   BIGINT,
-						            	cbiguint     BIGUINT,
-						            	cfloatmin    FLOAT,
-						            	cfloatmax    FLOAT,
-						            	cdoublemin   DOUBLE,
-						            	cdoublemax   DOUBLE,
-						            	ctext        TEXT,
-						            	cts          TIMESTAMP
-						            )
-						            `); err != nil {
-			t.Fatalf("Error occured: %s", err.Error())
-		}
-	case err != nil:
-		t.Fatalf("Error occured: %s", err.Error())
-	case err == nil:
-		break
-	default:
-		t.Fatalf("Error occured: %s", err.Error())
-	}
+    var name string
+    err = db.QueryRowContext(ctx, "select name from test.sys_tables where name = 'TABLEALLDATATYPES'").Scan(&name)
+    switch {
+    case err == sql.ErrNoRows:
+        if _, err := db.ExecContext(ctx,
+            `CREATE TABLE test.tablealldatatypes
+                                    (
+                                        ctinyintmin  TINYINT,
+                                        ctinyintmax  TINYINT,
+                                        ctinyuint    TINYUINT,
+                                        csmallintmin SMALLINT,
+                                        csmallintmax SMALLINT,
+                                        csmalluint   SMALLUINT,
+                                        cintmin      INT,
+                                        cintmax      INT,
+                                        cuint        UINT,
+                                        cbigintmin   BIGINT,
+                                        cbigintmax   BIGINT,
+                                        cbiguint     BIGUINT,
+                                        cfloatmin    FLOAT,
+                                        cfloatmax    FLOAT,
+                                        cdoublemin   DOUBLE,
+                                        cdoublemax   DOUBLE,
+                                        ctext        TEXT,
+                                        cts          TIMESTAMP
+                                    )
+                                    `); err != nil {
+            t.Fatalf("Error occurred: %s", err.Error())
+        }
+    case err != nil:
+        t.Fatalf("Error occurred: %s", err.Error())
+    case err == nil:
+        break
+    default:
+        t.Fatalf("Error occurred: %s", err.Error())
+    }
 ```
 
 ### DML
 
 ```go
-	if _, err := db.ExecContext(ctx,
-		`INSERT INTO test.tablealldatatypes
-	                            VALUES  ( -128,
-	                            		  127,
-	                            		  255,
-	                            		  -32768,
-	                            		  32767,
-	                            		  65535,
-	                            		  -2147483648,
-	                            		  2147483647,
-	                            		  4294967295,
-	                            		  -9223372036854775808,
-	                            		  9223372036854775807,
-	                            		  18446744073709551615,
-	                            		  222.222,
-	                            		  222.222,
-	                            		  222.222,
-	                            		  222.222,
-	                            		  '汉字',
-	                            		  CURRENT_TIMESTAMP )`,
-	); err != nil {
-		log.Fatal("An Error occured: ", err)
-	}
+    if _, err := db.ExecContext(ctx,
+        `INSERT INTO test.tablealldatatypes
+                                VALUES  ( -128,
+                                          127,
+                                          255,
+                                          -32768,
+                                          32767,
+                                          65535,
+                                          -2147483648,
+                                          2147483647,
+                                          4294967295,
+                                          -9223372036854775808,
+                                          9223372036854775807,
+                                          18446744073709551615,
+                                          222.222,
+                                          222.222,
+                                          222.222,
+                                          222.222,
+                                          '汉字',
+                                          CURRENT_TIMESTAMP )`,
+    ); err != nil {
+        log.Fatal("An Error occurred: ", err)
+    }
 ```
 
 ### Query
 
 ```go
-	rows, err := db.QueryContext(ctx, "SELECT trid, cbigintmin, ctext, cts FROM test.tablealldatatypes")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
+    rows, err := db.QueryContext(ctx, "SELECT trid, cbigintmin, ctext, cts FROM test.tablealldatatypes")
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer rows.Close()
 
-	var Trid uint64
-	var AnyValue interface{}
-	var StringValue string
-	var TiemstampValue time.Time
+    var Trid uint64
+    var AnyValue interface{}
+    var StringValue string
+    var TiemstampValue time.Time
 
-	for rows.Next() {
-		if err := rows.Scan(&Trid, &AnyValue, &StringValue, &TiemstampValue); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(fmt.Sprintf("Row: %v | %v | %v | %v ", Trid, AnyValue, StringValue, TiemstampValue))
-	}
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
+    for rows.Next() {
+        if err := rows.Scan(&Trid, &AnyValue, &StringValue, &TiemstampValue); err != nil {
+            log.Fatal(err)
+        }
+        fmt.Println(fmt.Sprintf("Row: %v | %v | %v | %v ", Trid, AnyValue, StringValue, TiemstampValue))
+    }
+    if err := rows.Err(); err != nil {
+        log.Fatal(err)
+    }
 ```
 
 ## URI
@@ -169,19 +169,19 @@ To identify a Siodb resource, the driver use the
 
 For TLS connection (default):
 
-```
+```golang
 siodbs://root@localhost:50000?identity_file=/home/siodb/.ssh/id_rsa
 ```
 
 For TCP plain text connection:
 
-```
+```golang
 siodb://root@localhost:50000?identity_file=/home/siodb/.ssh/id_rsa
 ```
 
 For Unix socket connection:
 
-```
+```golang
 siodbu://root@/run/siodb/siodb.socket?identity_file=/home/siodb/.ssh/id_rsa
 ```
 
@@ -222,4 +222,3 @@ Please refer to the [Contributing file](CONTRIBUTING.md).
 ## License
 
 Licensed under [Apache License version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-

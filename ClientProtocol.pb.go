@@ -24,7 +24,7 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 //* Command from client to server.
 type Command struct {
 	//* Request ID
-	RequestId uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	RequestID uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	//* Command text
 	Text                 string   `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -57,9 +57,9 @@ func (m *Command) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Command proto.InternalMessageInfo
 
-func (m *Command) GetRequestId() uint64 {
+func (m *Command) GetRequestID() uint64 {
 	if m != nil {
-		return m.RequestId
+		return m.RequestID
 	}
 	return 0
 }
@@ -74,7 +74,7 @@ func (m *Command) GetText() string {
 //* Response from server.
 type ServerResponse struct {
 	//* Corresponding request ID.
-	RequestId uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	RequestID uint64 `protobuf:"varint,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	//* Messages from server.
 	Message []*StatusMessage `protobuf:"bytes,2,rep,name=message,proto3" json:"message,omitempty"`
 	//* Description of columns in this data set.
@@ -122,9 +122,9 @@ func (m *ServerResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ServerResponse proto.InternalMessageInfo
 
-func (m *ServerResponse) GetRequestId() uint64 {
+func (m *ServerResponse) GetRequestID() uint64 {
 	if m != nil {
-		return m.RequestId
+		return m.RequestID
 	}
 	return 0
 }
@@ -326,7 +326,7 @@ type ClientAuthenticationResponse struct {
 	//* Message from IO manager. Set in case of error.
 	Message *StatusMessage `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
 	//* ID of started session.
-	SessionId            string   `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	SessionId            string   `protobuf:"bytes,3,opt,name=session_id,json=sessionID,proto3" json:"session_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

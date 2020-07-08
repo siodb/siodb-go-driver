@@ -17,24 +17,24 @@ type connector struct {
 type siodbConn struct {
 	netConn             net.Conn
 	cfg                 Config
-	sessionId           string
-	RequestId           uint64
+	sessionID           string
+	RequestID           uint64
 	nullAllowed         bool
 	nullBitmaskByteSize int
 	completed           bool
 }
 
-// TODO: https://golang.org/pkg/database/sql/driver/#ConnBeginTx
+// BeginTx TODO: https://golang.org/pkg/database/sql/driver/#ConnBeginTx
 func BeginTx(ctx context.Context, opts driver.TxOptions) (driver.Tx, error) {
 	return nil, nil
 }
 
-// TODO: https://golang.org/pkg/database/sql/driver/#Conn
+// Begin TODO: https://golang.org/pkg/database/sql/driver/#Conn
 func (sc *siodbConn) Begin() (driver.Tx, error) {
 	return nil, nil
 }
 
-// TODO: Implement proper exit in Siodb
+// Close TODO: Implement proper exit in Siodb
 func (sc *siodbConn) Close() (err error) {
 
 	if err := sc.netConn.Close(); err != nil {
@@ -43,12 +43,12 @@ func (sc *siodbConn) Close() (err error) {
 	return nil
 }
 
-// TODO: https://golang.org/pkg/database/sql/driver/#ConnPrepareContext
+// PrepareContext TODO: https://golang.org/pkg/database/sql/driver/#ConnPrepareContext
 func PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	return nil, nil
 }
 
-// TODO: https://golang.org/pkg/database/sql/driver/#Conn
+// Prepare TODO: https://golang.org/pkg/database/sql/driver/#Conn
 func (sc *siodbConn) Prepare(query string) (driver.Stmt, error) {
 	return nil, nil
 }
@@ -57,7 +57,7 @@ func checkServerError(Message []*StatusMessage) error {
 
 	if len(Message) > 0 {
 		for _, Msg := range Message {
-			return &SiodbServerError{Msg.StatusCode, Msg.Text}
+			return &siodbServerError{Msg.StatusCode, Msg.Text}
 		}
 	}
 
@@ -72,11 +72,11 @@ func (sc *siodbConn) ExecContext(ctx context.Context, query string, args []drive
 	// TODO: Bind Values
 
 	if err = sc.writeServerCommand(query); err != nil {
-		return nil, &SiodbDriverError{"Fail to write server command."}
+		return nil, &siodbDriverError{"Fail to write server command."}
 	}
 
 	if sr, err = sc.readServer(); err != nil {
-		return nil, &SiodbDriverError{"Fail to read server response."}
+		return nil, &siodbDriverError{"Fail to read server response."}
 	}
 
 	if err = checkServerError(sr.Message); err != nil {
@@ -90,7 +90,7 @@ func (sc *siodbConn) ExecContext(ctx context.Context, query string, args []drive
 
 	return &siodbResult{
 		AffectedRowCount: AffectedRowCount,
-		insertId:         0,
+		insertID:         0,
 	}, nil
 }
 

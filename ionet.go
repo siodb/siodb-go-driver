@@ -30,7 +30,7 @@ func (sc *siodbConn) cleanupBuffer() (cpt int16, err error) {
 	for {
 		// Get Current Row Size
 		if _, rowLength, err = sc.readVarint(); err != nil {
-			return 0, &SiodbDriverError{"Unable to read the row size."}
+			return 0, &siodbDriverError{"Unable to read the row size."}
 		}
 		if rowLength == 0 {
 			sc.debug("cleanupBuffer | Dropped %d rows so far.", cpt)
@@ -45,13 +45,13 @@ func (sc *siodbConn) cleanupBuffer() (cpt int16, err error) {
 	}
 
 }
-func (sc *siodbConn) writeServerCommand(sql_text string) error {
+func (sc *siodbConn) writeServerCommand(sqlText string) error {
 
-	sc.RequestId = 1
+	sc.RequestID = 1
 
 	command := &Command{
-		RequestId: sc.RequestId,
-		Text:      sql_text,
+		RequestID: sc.RequestID,
+		Text:      sqlText,
 	}
 
 	if len(command.Text) < 300 {
@@ -78,9 +78,9 @@ func (sc *siodbConn) readServer() (serverResponse ServerResponse, err error) {
 	sc.debug("Raw Proto Message: %v", serverResponse)
 
 	// Check request ID
-	sc.debug("readServer | Request Id: %d.", serverResponse.RequestId)
-	if serverResponse.RequestId != sc.RequestId {
-		return serverResponse, &SiodbDriverError{"Wrong request ID in the server response."}
+	sc.debug("readServer | Request Id: %d.", serverResponse.RequestID)
+	if serverResponse.RequestID != sc.RequestID {
+		return serverResponse, &siodbDriverError{"Wrong request ID in the server response."}
 	}
 
 	// Check dataset presence
@@ -126,7 +126,7 @@ func (sc *siodbConn) readRow(dest []driver.Value, columnDesc []*ColumnDescriptio
 
 	// Get Current Row Size
 	if _, rowLength, err = sc.readVarint(); err != nil {
-		return &SiodbDriverError{"Unable to read the row size."}
+		return &siodbDriverError{"Unable to read the row size."}
 	}
 
 	sc.debug("readRow | --------------------------------------------------")
@@ -143,7 +143,7 @@ func (sc *siodbConn) readRow(dest []driver.Value, columnDesc []*ColumnDescriptio
 	if sc.nullAllowed == true {
 		Bitmask = make([]byte, sc.nullBitmaskByteSize)
 		if _, err = io.ReadFull(sc.netConn, Bitmask); err != nil {
-			return &SiodbDriverError{"Fail to read the bitmask byte(s)."}
+			return &siodbDriverError{"Fail to read the bitmask byte(s)."}
 		}
 		sc.debug("readRow | Bitmask value : %08b.", Bitmask)
 	}
@@ -162,7 +162,7 @@ func (sc *siodbConn) readRow(dest []driver.Value, columnDesc []*ColumnDescriptio
 
 		if IsNull == byte(0) { // If not null
 			if dest[idx], err = sc.readFieldData(column.Type); err != nil {
-				return &SiodbDriverError{"Fail to read field " + column.Name + " from current row | " + err.Error()}
+				return &siodbDriverError{"Fail to read field " + column.Name + " from current row | " + err.Error()}
 			}
 		} else { // if null
 			dest[idx] = nil
@@ -273,7 +273,7 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 	case ColumnDataType_COLUMN_DATA_TYPE_NTEXT:
 
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 
 	case ColumnDataType_COLUMN_DATA_TYPE_BINARY:
 
@@ -287,15 +287,15 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 	case ColumnDataType_COLUMN_DATA_TYPE_DATE:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_TIME:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_TIME_WITH_TZ:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 
 	case ColumnDataType_COLUMN_DATA_TYPE_TIMESTAMP:
 
@@ -312,13 +312,13 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 		sc.debug(" |--> dayOfMonth      : %d", dayOfMonth)
 		month := int((buff[1] & byte(30) >> 1) + 1)
 		sc.debug(" |--> month           : %d", month)
-		slice_year := []byte{
+		sliceYear := []byte{
 			byte(0),
 			byte((buff[3] & byte(224) >> 5)),
 			byte((buff[2] & byte(224) >> 5) + (buff[3] & byte(31) << 3)),
 			byte((buff[1] & byte(224) >> 5) + (buff[2] & byte(31) << 3)),
 		}
-		year := int(binary.BigEndian.Uint32(slice_year[:]))
+		year := int(binary.BigEndian.Uint32(sliceYear[:]))
 		sc.debug(" |--> year            : %d", int(year))
 
 		// Get time part if any, 6 next bytes
@@ -329,13 +329,13 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 			reserved1 := buff[0] & byte(1)
 			sc.debug(" |--> reserved1       : %d", reserved1)
 
-			slice_nanos := []byte{
+			sliceNanos := []byte{
 				byte((buff[3] & byte(126) >> 1)),
 				byte((buff[2] & byte(254) >> 1) + (buff[3] & byte(1) << 7)),
 				byte((buff[1] & byte(254) >> 1) + (buff[2] & byte(1) << 7)),
 				byte((buff[0] & byte(254) >> 1) + (buff[1] & byte(1) << 7)),
 			}
-			nanos := int(binary.BigEndian.Uint32(slice_nanos[:]))
+			nanos := int(binary.BigEndian.Uint32(sliceNanos[:]))
 			sc.debug(" |--> nanos           : %d", nanos)
 
 			seconds := int((buff[3] & byte(128) >> 7) + (buff[4] & byte(31) << 1))
@@ -360,43 +360,43 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 	case ColumnDataType_COLUMN_DATA_TYPE_TIMESTAMP_WITH_TZ:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_DATE_INTERVAL:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_TIME_INTERVAL:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_STRUCT:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_XML:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_JSON:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_UUID:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_MAX:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	case ColumnDataType_COLUMN_DATA_TYPE_UNKNOWN:
 		// TODO: implement type
 		sc.debug("Data type '%q' is not supported yet.", ColumnType)
-		return nil, &SiodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
+		return nil, &siodbDriverError{"Data type '" + ColumnType.String() + "' not supported yet."}
 	default:
 
 		sc.debug("Data type '%q' unknown.", ColumnType)
-		return nil, &SiodbDriverError{"Unknown data type."}
+		return nil, &siodbDriverError{"Unknown data type."}
 
 	}
 }
@@ -487,7 +487,7 @@ func writeMessage(w io.Writer, m proto.Message) (int, error) {
 	return vib + pbmmb, err
 }
 
-func (sc *siodbConn) ReadMessage(messageTypeId uint64, m proto.Message) (n int, err error) {
+func (sc *siodbConn) ReadMessage(messageTypeID uint64, m proto.Message) (n int, err error) {
 
 	// Function ReadMessage()
 	// source: https://github.com/stashed/stash/blob/master/vendor/github.com/matttproud/golang_protobuf_extensions/pbutil/decode.go
@@ -509,14 +509,14 @@ func (sc *siodbConn) ReadMessage(messageTypeId uint64, m proto.Message) (n int, 
 	var prefixBuf [binary.MaxVarintLen64]byte
 	var bytesRead, varIntBytes int
 	var messageLength uint64
-	var readMessageTypeId uint64
+	var readMessageTypeID uint64
 
 	// Read and check Message Type Id
-	_, readMessageTypeId, err = sc.readVarint()
-	if messageTypeId != readMessageTypeId {
-		return 0, &SiodbDriverError{"Wrong message type id."}
+	_, readMessageTypeID, err = sc.readVarint()
+	if messageTypeID != readMessageTypeID {
+		return 0, &siodbDriverError{"Wrong message type id."}
 	}
-	sc.debug("readServerMessage | Message Type Id: %d.", readMessageTypeId)
+	sc.debug("readServerMessage | Message Type Id: %d.", readMessageTypeID)
 
 	// Read Message
 	for varIntBytes == 0 { // i.e. no varint has been decoded yet.

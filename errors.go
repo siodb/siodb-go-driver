@@ -8,19 +8,19 @@ import (
 	"fmt"
 )
 
-type SiodbDriverError struct {
+type siodbDriverError struct {
 	Message string
 }
 
-type SiodbServerError struct {
+type siodbServerError struct {
 	Number  int32
 	Message string
 }
 
-func (sde *SiodbDriverError) Error() string {
+func (sde *siodbDriverError) Error() string {
 	return fmt.Sprintf("Siodb Driver Error: %s", sde.Message)
 }
 
-func (sse *SiodbServerError) Error() string {
+func (sse *siodbServerError) Error() string {
 	return fmt.Sprintf("Siodb Server Error: %d | %s", sse.Number, sse.Message)
 }

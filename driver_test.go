@@ -35,7 +35,7 @@ func TestDatabase(t *testing.T) {
 
 	db, err := sql.Open("siodb", uri)
 	if err != nil {
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 	defer db.Close()
 
@@ -43,7 +43,7 @@ func TestDatabase(t *testing.T) {
 	defer stop()
 
 	if err := db.PingContext(ctx); err != nil {
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 
 	var name string
@@ -51,14 +51,14 @@ func TestDatabase(t *testing.T) {
 	switch {
 	case err == sql.ErrNoRows:
 		if _, err := db.ExecContext(ctx, "CREATE DATABASE test"); err != nil {
-			t.Fatalf("Error occured %s", err.Error())
+			t.Fatalf("Error occurred %s", err.Error())
 		}
 	case err != nil:
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	case err == nil:
 		break
 	default:
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 }
 
@@ -66,7 +66,7 @@ func TestAllDataTypes(t *testing.T) {
 
 	db, err := sql.Open("siodb", uri)
 	if err != nil {
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 	defer db.Close()
 
@@ -74,11 +74,11 @@ func TestAllDataTypes(t *testing.T) {
 	defer stop()
 
 	if err := db.PingContext(ctx); err != nil {
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 
 	if _, err := db.ExecContext(ctx, "delete from test.TABLEALLDATATYPES"); err != nil {
-		t.Fatalf("Error occured %s", err.Error())
+		t.Fatalf("Error occurred %s", err.Error())
 	}
 
 	var name string
@@ -108,14 +108,14 @@ func TestAllDataTypes(t *testing.T) {
 						            	cts          TIMESTAMP
 						            )
 						            `); err != nil {
-			t.Fatalf("Error occured: %s", err.Error())
+			t.Fatalf("Error occurred: %s", err.Error())
 		}
 	case err != nil:
-		t.Fatalf("Error occured: %s", err.Error())
+		t.Fatalf("Error occurred: %s", err.Error())
 	case err == nil:
 		break
 	default:
-		t.Fatalf("Error occured: %s", err.Error())
+		t.Fatalf("Error occurred: %s", err.Error())
 	}
 
 	// Data type values
@@ -198,7 +198,7 @@ func TestAllDataTypes(t *testing.T) {
 			doublemax,
 			text,
 			ts.Format("2006-01-02 15:04:05.999999999"))); err != nil {
-		log.Fatal("An Error occured: ", err)
+		log.Fatal("An Error occurred: ", err)
 	}
 
 	rows, err := db.QueryContext(ctx, "SELECT * FROM test.tablealldatatypes")
