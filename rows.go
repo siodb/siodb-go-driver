@@ -33,8 +33,9 @@ func (rows *siodbRows) Next(dest []driver.Value) error {
 func (rows *siodbRows) Close() (err error) {
 
 	if !rows.sc.completed {
-
-		_, err = rows.sc.cleanupBuffer()
+		if _, err = rows.sc.cleanupBuffer(); err != nil {
+			return err
+		}
 	}
 
 	return nil

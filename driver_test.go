@@ -77,10 +77,6 @@ func TestAllDataTypes(t *testing.T) {
 		t.Fatalf("Error occurred %s", err.Error())
 	}
 
-	if _, err := db.ExecContext(ctx, "delete from test.TABLEALLDATATYPES"); err != nil {
-		t.Fatalf("Error occurred %s", err.Error())
-	}
-
 	var name string
 	err = db.QueryRowContext(ctx, "select name from test.sys_tables where name = 'TABLEALLDATATYPES'").Scan(&name)
 	switch {
@@ -113,7 +109,9 @@ func TestAllDataTypes(t *testing.T) {
 	case err != nil:
 		t.Fatalf("Error occurred: %s", err.Error())
 	case err == nil:
-		break
+		if _, err := db.ExecContext(ctx, "delete from test.TABLEALLDATATYPES"); err != nil {
+			t.Fatalf("Error occurred %s", err.Error())
+		}
 	default:
 		t.Fatalf("Error occurred: %s", err.Error())
 	}

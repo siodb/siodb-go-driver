@@ -23,7 +23,7 @@ func (sc *siodbConn) debug(message string, args ...interface{}) {
 
 func (sc *siodbConn) cleanupBuffer() (cpt int16, err error) {
 
-	var rowLength uint64 = 0
+	var rowLength uint64
 
 	sc.debug("cleanupBuffer | starts.")
 
@@ -121,7 +121,7 @@ func (sc *siodbConn) readServer() (serverResponse ServerResponse, err error) {
 
 func (sc *siodbConn) readRow(dest []driver.Value, columnDesc []*ColumnDescription) error {
 
-	var rowLength uint64 = 0
+	var rowLength uint64
 	var err error
 
 	// Get Current Row Size
@@ -281,7 +281,7 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 		sc.debug("readFieldData   | bytesRead: %d | err: %d | blobLength: %d.", bytesRead, err, blobLength)
 		Value := make([]byte, blobLength)
 		bytesRead, err = io.ReadFull(sc.netConn, Value)
-		sc.debug(" |--> Value [disabled for BLOB]")
+		sc.debug(" |--> Size: %v | Value [disabled for BLOB]", bytesRead)
 		return Value, err
 
 	case ColumnDataType_COLUMN_DATA_TYPE_DATE:
@@ -303,7 +303,7 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 
 		// Get date part, 4 first bytes
 		buff := make([]byte, 4)
-		bytesRead, err = io.ReadFull(sc.netConn, buff)
+		_, err = io.ReadFull(sc.netConn, buff)
 		hasTimePart := int(buff[0] & byte(1))
 		sc.debug(" |--> hasTimePart     : %t", hasTimePart)
 		dayOfWeek := int(buff[0] & byte(14) >> 1)
@@ -324,7 +324,7 @@ func (sc *siodbConn) readFieldData(ColumnType ColumnDataType) (dest driver.Value
 		// Get time part if any, 6 next bytes
 		if hasTimePart == 1 {
 			buff := make([]byte, 6)
-			bytesRead, err = io.ReadFull(sc.netConn, buff)
+			_, err = io.ReadFull(sc.netConn, buff)
 
 			reserved1 := buff[0] & byte(1)
 			sc.debug(" |--> reserved1       : %d", reserved1)
